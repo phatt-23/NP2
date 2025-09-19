@@ -5,10 +5,11 @@ Bachelor project.
 The data (input, steps, output) is completely separate from the program (visuals, graphs, formulas).
 
 The basic pipeline of reducing a problem A to B:
-    1. A_instance.txt
-    2. Parsed into text file, that will be easily read by the visualisation module
-    3. Reduction function
-    4. Spits out two files: B_instance.txt and A_to_B_steps.txt
+
+1. A_instance.txt
+2. Parsed into text file, that will be easily read by the visualisation module
+3. Reduction function
+4. Spits out two files: B_instance.txt and A_to_B_steps.txt
 
 ## 3SAT to HC
 
