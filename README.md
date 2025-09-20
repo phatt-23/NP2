@@ -27,7 +27,7 @@ The basic pipeline of reducing a problem A to B:
 ## Instance and Input Format
 
 <details>
-<summary>3SAT Instance and Input</summary>
+<summary>3SAT</summary>
 
 Formula written normally with ORs and ANDs and groupings.
 
@@ -53,17 +53,20 @@ x2 x3
 </details>
 
 <details>
-<summary>Graph Instance and Input</summary>
+<summary>Graph</summary>
 
 Instance consists of vertices and edges. If vertices are present in edges, they don't have to be specified by the user explicitely.
 However if there is a singleton vertex, it must be written out as a single word on a line.
+Edges can also be triplets if the problems requires it, i.e 3DM.
+Edges can be weighted.
+
 ```
 x_0
 x_6
 x_7
 x_0 x_2
-x_0 x_4
-x_0 x_5
+x_0 x_4 3   // weight 3
+x_0 x_5 2   // weight 2
 x_1 x_4
 x_1 x_5
 x_2 x_3
@@ -95,7 +98,7 @@ x_4 x_5
 </details>
 
 <details>
-<summary>SSP Instance and Input</summary>
+<summary>SSP</summary>
 
 Instance consists of the target sum as the first number. Next up are numbers in the (multi)set S.
 
