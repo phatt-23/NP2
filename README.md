@@ -9,17 +9,22 @@ Bachelor project.
 
 The basic pipeline of reducing a problem A to B:
 
-1. **A instance** string - in a way that human would write it
-2. Parsed into **input** string - easily parsable
+1. **A instance** string - in a way a human would write it
+2. Parsed into **input** string - easily parsable, readable but more verbose
 3. Reduction function 
-    - given input string it outputs the input string of the other problem
+    - given input string of problem A it outputs the input string of problem B
     - gives data about how the reduction was achieved, so the reduction can be explained step by step
-4. Program solving problem B read the input string and gives an answer.
-    - if the answer is positive, we can find solution to problem A
+4. Program solving problem B reads the input string and gives an answer.
+    - if the answer is positive, a solution to problem A can be built from it
 
 ## 3SAT Instance
 
 Formula written normally with ORs and ANDs and groupings.
+
+```
+(x1 OR NOT x2 OR x3) AND (x2 OR x3)
+(x1 || !x2 || x3) && (x2 || x3)
+```
 
 ## 3SAT Input
 
@@ -35,35 +40,4 @@ x1 !x2 !x4 // m clauses with negation specified by "!" prefix
 x2 x3
 ...
 ```
-
-## 3SAT to HC
-
-Pipeline: 3SAT formula -> input.txt -> Reduction(3SAT, HC) -> (output.txt, steps.txt).
-
-The graph and TeX visualisation of the input instance, reduction steps and output instance
-is done with by reading in the input.txt, steps.txt and output.txt.
-
-### Conversion from 3SAT formula to text file
-
-Given:
-
-```
-(a or b or c) and (not a or b or not c)
-```
-
-The program converts this into a text file:
-
-```
-3 2
-a,b,c
-a,b,c
-not a,b,not c
-```
-
-The first line contains the number of variables **m** and clauses **n**.
-
-The next line contains **m** names of the variables.
-
-The next **n** lines are the clauses. Specifically the literals in every 3CNF clause.
-Therefore, on each of these **n** lines, there are at most 3 literals.
 
