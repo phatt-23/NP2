@@ -2,14 +2,39 @@
 
 Bachelor project.
 
-The data (input, steps, output) is completely separate from the program (visuals, graphs, formulas).
+## What can it do?
+
+- Solve user given instances of problems that occur in this project.
+- Reduce instances of problems to instances of other problems (only some reductions are implemented).
 
 The basic pipeline of reducing a problem A to B:
 
-1. A_instance.txt
-2. Parsed into text file, that will be easily read by the visualisation module
-3. Reduction function
-4. Spits out two files: B_instance.txt and A_to_B_steps.txt
+1. **A instance** string - in a way that human would write it
+2. Parsed into **input** string - easily parsable
+3. Reduction function 
+    - given input string it outputs the input string of the other problem
+    - gives data about how the reduction was achieved, so the reduction can be explained step by step
+4. Program solving problem B read the input string and gives an answer.
+    - if the answer is positive, we can find solution to problem A
+
+## 3SAT Instance
+
+Formula written normally with ORs and ANDs and groupings.
+
+## 3SAT Input
+
+```
+n m   // n = number of variables, m = number of clauses
+
+x1    // n variables written below one another
+x2
+...
+xn
+
+x1 !x2 !x4 // m clauses with negation specified by "!" prefix
+x2 x3
+...
+```
 
 ## 3SAT to HC
 
