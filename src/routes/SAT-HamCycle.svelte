@@ -1,4 +1,3 @@
-
 <script>
     import { satDemos, getRandomDemo } from "../lib/demos";
     import { reduce } from "../lib/reduce";
@@ -6,7 +5,7 @@
 
     let satInstance = $state(getRandomDemo(satDemos));
     let satInput = $state("");
-    let sspInput = $state("");
+    let hamCycleInput = $state("");
 
     function onConvertClick() {
         if (!verifySatInstanceFormat(satInstance)) {
@@ -17,12 +16,12 @@
         const sat = parseSatInstance(satInstance);
         satInput = formatSatToInputString(sat);
 
-        sspInput = reduce("3SAT-SSP", satInput);
+        hamCycleInput = reduce("3SAT-HamCycle", satInput);
     }
 </script>
 
 <div>
-    <h1>3SAT to SSP</h1>
+    <h1>3SAT to HamCycle</h1>
     <hr />
     <div style="display: flex;">
         <div>
@@ -43,11 +42,11 @@
             </textarea>
         </div>
         <div>
-            <h2>SSP input</h2>
+            <h2>HamCycle input</h2>
             <textarea
-                bind:value={sspInput}
+                bind:value={hamCycleInput}
                 readonly
-                placeholder="Reduced SSP input..."
+                placeholder="Reduced HamCycle input..."
             >
             </textarea>
         </div>
