@@ -24,7 +24,10 @@ The basic pipeline of reducing a problem A to B:
 4. Program solving problem B reads the input string and gives an answer.
     - if the answer is positive, a solution to problem A can be built from it
 
-## 3SAT Instance and Input
+## Instance and Input Format
+
+<details>
+<summary>3SAT Instance and Input</summary>
 
 Formula written normally with ORs and ANDs and groupings.
 
@@ -47,8 +50,10 @@ x1 !x2 !x4 // m clauses with negation specified by "!" prefix
 x2 x3
 ...
 ```
+<details>
 
-## Graph Instance and Input
+<details>
+<summary>Graph Instance and Input</summary>
 
 Instance consists of vertices and edges. If vertices are present in edges, they don't have to be specified by the user explicitely.
 However if there is a singleton vertex, it must be written out as a single word on a line.
@@ -87,8 +92,10 @@ x_2 x_3
 x_2 x_4
 x_4 x_5
 ```
+</details>
 
-## SSP Instance and Input
+<details>
+<summary>SSP Instance and Input</summary>
 
 Instance consists of the target sum as the first number. Next up are numbers in the (multi)set S.
 
@@ -133,4 +140,5 @@ Input is consistent with the number of digits on each line.
 0000001
 0000001
 ```
+</details>
 
