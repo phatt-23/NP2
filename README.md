@@ -50,7 +50,7 @@ x1 !x2 !x4 // m clauses with negation specified by "!" prefix
 x2 x3
 ...
 ```
-<details>
+</details>
 
 <details>
 <summary>Graph Instance and Input</summary>
