@@ -1,10 +1,9 @@
 <script lang="ts">
-    import { hamCycleDemos, getRandomDemo } from "../lib/demos";
+    import { graphDemos, getRandomDemo } from "../lib/demos";
     import { formatGraphToInputString, parseGraphInstance, verifyGraphInstanceFormat } from "../lib/graph";
     import { reduce } from "../lib/reduce";
 
-    // let hamCycleInstance = $state(getRandomDemo(hamCycleDemos));
-    let hamCycleInstance = $state(hamCycleDemos[4]);
+    let hamCycleInstance = $state(getRandomDemo(graphDemos));
     let hamCycleInput = $state("");
     let hamCircuitInput = $state("");
 

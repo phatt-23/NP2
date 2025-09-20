@@ -2,6 +2,13 @@
 
 Bachelor project.
 
+## Questions to bring up during the next Consultation
+
+> Ve specifikaci zadani je:
+> "b) Zadat libovolnou instanci každého z problémů vyskytujících se v těchto převodech."
+> Znamena to, ze jestli mam prevod od A do B, musim implementovat obe tak, 
+> aby mohl uzivatel k obema problemum zadat vlastni instanci a dostat odpoved?
+
 ## What can it do?
 
 - Solve user given instances of problems that occur in this project.

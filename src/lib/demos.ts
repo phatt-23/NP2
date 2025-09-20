@@ -12,7 +12,7 @@ export const satDemos = [
 // user can provide vertices by writing one node name on a line, edges by writing two nodes on a line
 // when writing edges, user doesn't have to write vertex before it, as it will automatically add the vertex to the graph
 // if the vertex exists only by itself is not part of any other edge, it is be a singleton vertex
-export const hamCycleDemos = [
+export const graphDemos = [
 // vertices + edges
 `0
 1

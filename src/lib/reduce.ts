@@ -3,7 +3,12 @@ import { ASSERT } from './lib';
 import { parseSatInput } from './sat';
 import { formatSubsetSumToInputString, type SubsetSum } from './ssp';
 
-export type Reductions = "3SAT-HamCycle" | "HamCycle-HamCircuit" | "3SAT-SSP"
+export type Reductions = "3SAT-HamCycle" 
+                       | "HamCycle-HamCircuit" 
+                       | "3SAT-SSP" 
+                       | "HamCircuit-TSP"
+                       | "3SAT-3DM"
+                       ;
 
 // Reduces the problem A to B using the input of problem A and outputing the input for problem B. 
 export function reduce(reduction: Reductions, input: string): string {
@@ -14,6 +19,10 @@ export function reduce(reduction: Reductions, input: string): string {
             return reduceHamCycleToHamCircuit(input);
         case "3SAT-SSP":
             return reduceSatToSsp(input);
+        case "HamCircuit-TSP":
+            return reduceHamCircuitToTsp(input);
+        case "3SAT-3DM":
+            return reduceSatTo3dm(input);
         default:
             throw new Error("This reduction is not implemented.");
     }
@@ -219,3 +228,139 @@ function reduceSatToSsp(input: string): string {
 
     return formatSubsetSumToInputString(subsetSum);
 }
+
+function reduceHamCircuitToTsp(input: string): string {
+    const inGraph = parseGraphInput(input);
+
+    function edgeKey(a: string, b: string, w?: number) {
+        let s = a < b ? a + "%" + b : b + "%" + a;
+        if (w) s += "%" + w;
+        return s;
+    }
+
+    const inEdgeSet = new Set(inGraph.edges.map(([a,b]) => edgeKey(a,b)));
+
+    let vertices = [...inGraph.vertices];
+    let edgeSet = new Set<string>();
+
+    // make a complete graph
+    for (const u of vertices) {
+        for (const v of vertices) {
+            if (u == v) continue;
+            if (inEdgeSet.has(edgeKey(u,v))) {
+                edgeSet.add(edgeKey(u, v, 1));
+            } else {
+                edgeSet.add(edgeKey(u, v, 2));
+            }
+        }
+    }
+
+    const outGraph = {
+        vertices, 
+        edges: [...edgeSet.values()].map(edge => edge.split("%")),
+    };
+
+    return formatGraphToInputString(outGraph);
+}
+
+function reduceSatTo3dm(input: string): string {
+    const sat = parseSatInput(input);
+    
+    // even tips are true, odd tips are false
+    const k = sat.clauses.length;
+    const n = sat.variables.length;
+    let vertices = new Array<string>();
+    let triplets = new Array<string[]>();
+    const tips = new Map<string, boolean>();
+
+    // Boolean assignment gadgets.
+    // Add core and tip nodes and make triplets of them.
+    for (let i = 0; i < n; i++) {
+        const v = sat.variables[i];
+
+        for (let j = 0; j < 2*k; j++) {
+            vertices.push(v + "[C][" + j + "]");
+        }
+
+        for (let j = 0; j < 2*k; j++) {
+            vertices.push(v + "[T][" + j + "]");
+
+            const tip = v + "[T][" + j + "]";
+            triplets.push([
+                v + "[C][" + j + "]",
+                v + "[C][" + ((j+1) % (2*k)) + "]",
+                tip
+            ]);
+
+            // set to false as this tip wasn't used yet.
+            tips.set(tip, false);
+        }
+
+        ASSERT(2*2*k*(i+1) === vertices.length && 2*k*(i+1) === triplets.length, 
+            "There should be 4k new vertices for every variable (2k core + 2k tips) and 2k new triplets.");
+    }
+
+    ASSERT(2*2*k*n === vertices.length && 2*k*n === triplets.length, 
+        "There should be 4kn new vertices for every n variables (2k core + 2k tips)" + 
+        " and 2k new triplets for each n variables.");
+
+    // Satisfiability gadgets.
+    // add clause for every clause and connect it with its tips.
+    for (let i = 0; i < k; i++) {
+        const clause = sat.clauses[i];
+
+        const c = "[C][" + i + "]";
+        const cDash = "[C'][" + i + "]";
+
+        vertices.push(c);
+        vertices.push(cDash);
+
+        for (const literal of clause) {
+            let tip = undefined;
+            if (!literal.includes("!"))
+                tip = literal + "[T][" + (2*i) + "]"; // true, take the even 
+            else 
+                tip = literal.replace("!", "") + "[T][" + (2*i + 1) + "]"; // false, take the odd
+
+            ASSERT(tips.has(tip), "This tip " + tip + " doesn't exist.");
+
+            triplets.push([ c, cDash, tip ]);
+            tips.set(tip, true);
+        }
+    }
+
+    // Garbage collection
+    // The tips that weren't used are paired with two new nodes so they are in a triplet.
+    const unusedTips = [...tips.entries()]
+        .filter(([_tip, used]) => !used)
+        .map(([tip, _used]) => tip);
+
+    for (const tip of unusedTips) {
+        const q = tip + "[Q]";
+        const qDash = tip + "[Q']";
+        vertices.push(q);
+        vertices.push(qDash);
+        triplets.push([tip, q, qDash]);
+    }
+
+    ASSERT(vertices.length >= (2*2*k*n + 2*k + 2*unusedTips.length), 
+        "There should be at least 4kn vertices for boolean assignment " + 
+        "+ 2k clause vertices " + 
+        "+ 2*|unusedTips| of garbage collect vertices.");
+
+    ASSERT(triplets.length === (2*k*n + 2*k*n), 
+        "There should be 2kn triplets for core and tip boolean assignment" + 
+            // 2 for true and false k tips for every clause, for each n variables
+        " and 2kn triplets with tip and either clause nodes or garbage collector nodes.");
+
+    const output = 
+        vertices.length + " " + triplets.length +
+        "\n\n" +
+        vertices.join("\n") + 
+        "\n\n" +
+        triplets.map(t => t.join(" ")).join("\n");
+
+    return output;
+}
+
+
