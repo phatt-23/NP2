@@ -17,7 +17,7 @@ The basic pipeline of reducing a problem A to B:
 4. Program solving problem B reads the input string and gives an answer.
     - if the answer is positive, a solution to problem A can be built from it
 
-## 3SAT Instance
+## 3SAT Instance and Input
 
 Formula written normally with ORs and ANDs and groupings.
 
@@ -26,7 +26,7 @@ Formula written normally with ORs and ANDs and groupings.
 (x1 || !x2 || x3) && (x2 || x3)
 ```
 
-## 3SAT Input
+This formula gets parsed into a string that is easily parsable by other programs.
 
 ```
 n m   // n = number of variables, m = number of clauses
@@ -39,5 +39,91 @@ xn
 x1 !x2 !x4 // m clauses with negation specified by "!" prefix
 x2 x3
 ...
+```
+
+## Graph Instance and Input
+
+Instance consists of vertices and edges. If vertices are present in edges, they don't have to be specified by the user explicitely.
+However if there is a singleton vertex, it must be written out as a single word on a line.
+```
+x_0
+x_6
+x_7
+x_0 x_2
+x_0 x_4
+x_0 x_5
+x_1 x_4
+x_1 x_5
+x_2 x_3
+x_2 x_4
+x_4 x_5
+```
+
+This instance gets converted into input string.
+
+```
+6 8  // number of vertices n and edges m
+
+x_0  // vertices listed on n lines
+x_1
+x_2
+x_3
+x_4
+x_5
+
+x_0 x_2 // edges listed on m lines
+x_0 x_4
+x_0 x_5
+x_1 x_4
+x_1 x_5
+x_2 x_3
+x_2 x_4
+x_4 x_5
+```
+
+## SSP Instance and Input
+
+Instance consists of the target sum as the first number. Next up are numbers in the (multi)set S.
+
+```
+1111333 
+
+1000100 
+1000010
+100111
+100000
+10101
+10010
+1001
+1000
+100
+100
+10
+10
+1
+1
+```
+
+Input is consistent with the number of digits on each line.
+
+```
+14 7    // n = number of numbers in the set S; m = number of digits they have 
+
+1111333 // the target sum with m digits
+
+1000100 // n numbers in set S with m digits
+1000010
+0100111
+0100000
+0010101
+0010010
+0001001
+0001000
+0000100
+0000100
+0000010
+0000010
+0000001
+0000001
 ```
 
