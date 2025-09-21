@@ -1,14 +1,15 @@
 import { type Graph } from "./graph";
-import { DIRECTED_GRAPH_DEFAULT_STYLE, GRAPH_HAMCYCLE_FROM_3SAT_STYLESHEET, GRAPH_DEFAULT_STYLE } from "./graph-styles";
+import { DIRECTED_GRAPH_DEFAULT_STYLE, GRAPH_HAMCYCLE_FROM_3SAT_STYLESHEET, GRAPH_DEFAULT_STYLE, GRAPH_TSP_FROM_HAMCIRCUIT_STYLE } from "./graph-styles";
 import type { ElementDefinition } from "cytoscape";
 import { ASSERT } from "./lib";
 import type cytoscape from "cytoscape";
 
 export type GraphLayout = "default" 
                         | "HamCycle-From-3SAT" 
+                        | "HamCircuit-From-HamCycle"
                         | "HamCycle" 
                         | "HamCircuit"
-                        | "HamCircuit-From-HamCycle"
+                        | "TSP"
                         ;
 
 
@@ -33,6 +34,11 @@ export function styleCy(cy: cytoscape.Core, layout: GraphLayout) {
         cy.style().append(GRAPH_DEFAULT_STYLE);
         cy.layout({ name: "circle" }).run();
         break;
+    case "TSP":
+        cy.style()
+            .append(GRAPH_DEFAULT_STYLE)
+            .append(GRAPH_TSP_FROM_HAMCIRCUIT_STYLE);
+        cy.layout({ name: "circle" }).run();
     default:
         cy.style().append(GRAPH_DEFAULT_STYLE);
         cy.layout({ name: "circle" }).run();
@@ -157,11 +163,13 @@ export function layoutGraphToCyElements(graph: Graph, layout: GraphLayout): Elem
                 return x * Math.PI/180;
             }
 
+            const rot = angleStep / 4;
+
             // add vertices around a circle in triplets
             for (let i = 0; i < tripletCount; i++) {
                 // normalised
-                const y = Math.sin(toRad(angleStep * i - 90));
-                const x = Math.cos(toRad(angleStep * i - 90));
+                const x = Math.cos(toRad(angleStep * i - rot));
+                const y = Math.sin(toRad(angleStep * i - rot));
 
                 const position = { 
                     x: radius * x, 
@@ -179,6 +187,16 @@ export function layoutGraphToCyElements(graph: Graph, layout: GraphLayout): Elem
 
             return data;
         }
+        case "TSP":
+            return [
+                ...graph.vertices.map(name => ({ data: { id: name } })),
+                ...graph.edges.map(([u, v, w]) => ({ data: { 
+                    id: u + "--" + v, 
+                    source: u, 
+                    target: v, 
+                    weight: Number.parseInt(w) 
+                }}))
+            ];    
         default:
             return [
                 ...graph.vertices.map(name => ({ data: { id: name } })),

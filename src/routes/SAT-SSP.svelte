@@ -1,10 +1,12 @@
-
-<script>
+<script lang="ts">
+    import BooleanFormula from "../lib/SatFormula.svelte";
     import { satDemos, getRandomDemo } from "../lib/demos";
     import { reduce } from "../lib/reduce";
-    import { verifySatInstanceFormat, parseSatInstance, formatSatToInputString } from "../lib/sat";
+    import ReductionPanel from "../lib/ReductionPanel.svelte";
+    import { type SatExpression, verifySatInstanceFormat, parseSatInstance, formatSatToInputString } from "../lib/sat";
 
     let satInstance = $state(getRandomDemo(satDemos));
+    let sat = $state<SatExpression>({ variables: [], clauses: [] });
     let satInput = $state("");
     let sspInput = $state("");
 
@@ -14,50 +16,23 @@
             return;
         }
 
-        const sat = parseSatInstance(satInstance);
+        sat = parseSatInstance(satInstance);
         satInput = formatSatToInputString(sat);
 
         sspInput = reduce("3SAT-SSP", satInput);
     }
 </script>
 
-<div>
-    <h1>3SAT to SSP</h1>
-    <hr />
-    <div style="display: flex;">
-        <div>
-            <h2>3SAT instance</h2>
-            <textarea
-                bind:value={satInstance}
-                placeholder="Instance of 3SAT..."
-            >
-            </textarea>
-        </div>
-        <div>
-            <h2>3SAT input</h2>
-            <textarea
-                bind:value={satInput}
-                readonly
-                placeholder="Content of 'input' file generated from instance..."
-            >
-            </textarea>
-        </div>
-        <div>
-            <h2>SSP input</h2>
-            <textarea
-                bind:value={sspInput}
-                readonly
-                placeholder="Reduced SSP input..."
-            >
-            </textarea>
-        </div>
-    </div>
-    <button onclick={onConvertClick}>Convert</button>
-</div>
+<h1>3SAT to SSP</h1>
+<hr />
+<ReductionPanel
+    inProblem={"3SAT"}
+    outProblem={"SSP"}
+    inInstance={satInstance}
+    inInput={satInput}
+    outInput={sspInput}
+    onConvertClick={onConvertClick}
+></ReductionPanel>
 
-<style>
-    textarea {
-        width: 30em;
-        height: 20em;
-    }
-</style>
+<h2>3SAT Formula</h2>
+<BooleanFormula {sat}/>

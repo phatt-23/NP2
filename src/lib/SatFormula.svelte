@@ -17,5 +17,4 @@
     })
 </script>
 
-<h2>Boolean Formula</h2>
 <div bind:this={mathElement}></div>

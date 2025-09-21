@@ -1,6 +1,6 @@
-import type cytoscape from "cytoscape";
+import type { StylesheetStyle } from "cytoscape";
 
-export const DIRECTED_GRAPH_DEFAULT_STYLE: cytoscape.StylesheetStyle[] = [
+export const GRAPH_DEFAULT_STYLE: StylesheetStyle[] = [
     {
         selector: 'node',
         style: {
@@ -10,45 +10,57 @@ export const DIRECTED_GRAPH_DEFAULT_STYLE: cytoscape.StylesheetStyle[] = [
             'background-color': '#61bffc',
             'text-outline-color': '#fff',
             'text-outline-width': 2,
+            "border-color": "black",
+            "border-style": "solid",
+            "border-width": 2,
         },
     },
     {
         selector: 'edge',
         style: {
             'curve-style': 'bezier',
+            'line-color': "black",
+            'width': 2
+        }
+    }
+];
+
+export const DIRECTED_GRAPH_DEFAULT_STYLE: StylesheetStyle[] = [
+    ...GRAPH_DEFAULT_STYLE,
+    {
+        selector: 'edge',
+        style: {
             'target-arrow-shape': 'triangle',
             'target-arrow-color': '#000',
-            'line-color': '#999',
-            'line-cap': 'round',
-            'width': 2
         }
     }
 ];
 
-export const GRAPH_DEFAULT_STYLE: cytoscape.StylesheetStyle[] = [
+export const GRAPH_EDGE_LABEL_STYLE: StylesheetStyle[] = [
     {
-        selector: 'node',
+        selector: "edge",
         style: {
-            'label': 'data(id)',
-            "text-valign": "top",
-            'color': '#000',
-            'background-color': '#61bffc',
-            'text-outline-color': '#fff',
-            'text-outline-width': 2,
+            "label": "data(id)",
         },
     },
-    {
-        selector: 'edge',
-        style: {
-            'curve-style': 'bezier',
-            'line-color': '#999',
-            'line-cap': 'round',
-            'width': 2
-        }
-    }
 ];
 
-export const GRAPH_HAMCYCLE_FROM_3SAT_STYLESHEET: cytoscape.StylesheetStyle[] = [
+export const GRAPH_TSP_FROM_HAMCIRCUIT_STYLE: StylesheetStyle[] = [
+    {
+        selector: "edge",
+        style: {
+            "label": "data(weight)",
+            "line-color": "black",
+            "line-opacity": "mapData(weight, 1, 2, 1, 0.4)",
+            "width": "mapData(weight, 1, 2, 4, 2)",
+            "text-background-color": "white",
+            "text-background-padding": 2,
+            "text-background-opacity": 1,
+        },
+    },
+];
+
+export const GRAPH_HAMCYCLE_FROM_3SAT_STYLESHEET: StylesheetStyle[] = [
     {
         selector: "node",
         style: {

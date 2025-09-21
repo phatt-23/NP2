@@ -1,12 +1,16 @@
 <script lang="ts">
     import { getRandomDemo, graphDemos } from "../lib/demos";
-    import { formatGraphToInputString, parseGraphInstance, verifyGraphInstanceFormat } from "../lib/graph";
+    import { formatGraphToInputString, parseGraphInput, parseGraphInstance, verifyGraphInstanceFormat, type Graph } from "../lib/graph";
+    import GraphElement from "../lib/GraphElement.svelte";
     import { reduce } from "../lib/reduce";
+    import ReductionPanel from "../lib/ReductionPanel.svelte";
 
     
     let hamCircuitInstance = $state(getRandomDemo(graphDemos));
     let hamCircuitInput = $state("");
     let tspInput = $state("");
+    let hamCircuitGraph = $state<Graph>({ vertices: [], edges: []});
+    let tspGraph = $state<Graph>({ vertices: [], edges: []});
 
     function onConvertClick() {
         if (!verifyGraphInstanceFormat(hamCircuitInstance)) {
@@ -14,52 +18,27 @@
             return;
         }
 
-        const graph = parseGraphInstance(hamCircuitInstance);
-        hamCircuitInput = formatGraphToInputString(graph);
+        hamCircuitGraph = parseGraphInstance(hamCircuitInstance);
+        hamCircuitInput = formatGraphToInputString(hamCircuitGraph);
     
-        const reduction = reduce("HamCircuit-TSP", hamCircuitInput);
-        tspInput = reduction;
+        tspInput = reduce("HamCircuit-TSP", hamCircuitInput);
+        tspGraph = parseGraphInput(tspInput);
     }
 </script>
 
+<h1>HamCircuit to TSP</h1>
+<hr />
+<ReductionPanel
+    inProblem={"HamCircuit"}
+    outProblem={"TSP"}
+    inInstance={hamCircuitInstance}
+    inInput={hamCircuitInput}
+    outInput={tspInput}
+    onConvertClick={onConvertClick}
+/>
 
-<div>
-    <h1>HamCircuit to TSP</h1>
-    <hr />
-    <div style="display: flex;">
-        <div>
-            <h2>HamCircuit instance</h2>
-            <textarea
-                bind:value={hamCircuitInstance}
-                placeholder="Instance of HamCircuit..."
-            >
-            </textarea>
-        </div>
-        <div>
-            <h2>HamCircuit input</h2>
-            <textarea
-                bind:value={hamCircuitInput}
-                readonly
-                placeholder="Content of 'input' file generated from instance..."
-            >
-            </textarea>
-        </div>
-        <div>
-            <h2>TSP input</h2>
-            <textarea
-                bind:value={tspInput}
-                readonly
-                placeholder="Reduced TSP input..."
-            >
-            </textarea>
-        </div>
-    </div>
-    <button onclick={onConvertClick}>Convert</button>
-</div>
+<h2>HamCircuit Graph</h2>
+<GraphElement layout={"HamCircuit"} graph={hamCircuitGraph}/>
 
-<style>
-    textarea {
-        width: 30em;
-        height: 20em;
-    }
-</style>
+<h2>TSP Graph</h2>
+<GraphElement layout={"TSP"} graph={tspGraph}/>

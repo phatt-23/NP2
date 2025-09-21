@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "cytoscape": "^3.33.1",
+    "cytoscape-automove": "^1.10.3",
     "graphology": "^0.26.0",
     "katex": "^0.16.22",
     "sigma": "^3.0.2",

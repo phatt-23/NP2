@@ -361,5 +361,3 @@ function reduceSatTo3dm(input: string): string {
 
     return output;
 }
-
-
