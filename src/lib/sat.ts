@@ -15,7 +15,7 @@ const LITERAL = new RegExp(
     `\\s*${NEGATION.source}?${IDENTIFIER.source}\\s*`, "i");
 
 const OR = /(?:\s+(?:or|OR)\s+|\s*\|\|\s*)/i;
-const AND = /(?:\s+(?:and|AND)\s+|\s*&&s*)/i;
+const AND = /(?:\s*(?:and|AND)\s*|\s*&&s*)/i;
 
 const CLAUSE = new RegExp(
     `\\(\\s*(${LITERAL.source}${OR.source})?(${LITERAL.source}${OR.source})?${LITERAL.source}\\s*\\)`, "i");
@@ -23,6 +23,7 @@ const FORMULA = new RegExp(
     `^\\s*(${CLAUSE.source}${AND.source})*${CLAUSE.source}\\s*$`, "i");
 
 // Verifies the format of the sat formula.
+// TODO: Make an actual language checker not just regex. It crashes with bigger input.
 export function verifySatInstanceFormat(instance: string): boolean {
     return FORMULA.test(instance);
 }

@@ -1,11 +1,15 @@
 <script lang="ts">
     import { graphDemos, getRandomDemo } from "../lib/demos";
-    import { formatGraphToInputString, parseGraphInstance, verifyGraphInstanceFormat } from "../lib/graph";
+    import { formatGraphToInputString, parseGraphInput, parseGraphInstance, verifyGraphInstanceFormat, type Graph } from "../lib/graph";
+    import GraphElement from "../lib/GraphElement.svelte";
     import { reduce } from "../lib/reduce";
 
     let hamCycleInstance = $state(getRandomDemo(graphDemos));
     let hamCycleInput = $state("");
     let hamCircuitInput = $state("");
+
+    let hamCycleGraph = $state<Graph>({ vertices: [], edges: [] }); 
+    let hamCircuitGraph = $state<Graph>({ vertices: [], edges: [] }); 
 
     function onConvertClick() {
         if (!verifyGraphInstanceFormat(hamCycleInstance)) {
@@ -13,15 +17,15 @@
             return;
         }
 
-        const graph = parseGraphInstance(hamCycleInstance);
-        hamCycleInput = formatGraphToInputString(graph);
+        hamCycleGraph = parseGraphInstance(hamCycleInstance);
+        hamCycleInput = formatGraphToInputString(hamCycleGraph);
     
-        const reduction = reduce("HamCycle-HamCircuit", hamCycleInput);
-        hamCircuitInput = reduction;
+        hamCircuitInput = reduce("HamCycle-HamCircuit", hamCycleInput);
+        hamCircuitGraph = parseGraphInput(hamCircuitInput);
     }
 </script>
 
-<div>
+<main>
     <h1>HamCycle to HamCircuit</h1>
     <p>
         Hamiltonian Cycle Problem uses directed graph. 
@@ -59,7 +63,13 @@
         </div>
     </div>
     <button onclick={onConvertClick}>Convert</button>
-</div>
+
+    <h2>HamCycle Graph</h2>
+    <GraphElement layout={"HamCycle"} graph={hamCycleGraph} />
+
+    <h2>HamCircuit Graph</h2>
+    <GraphElement layout={"HamCircuit-From-HamCycle"} graph={hamCircuitGraph} />
+</main>
 
 <style>
     textarea {

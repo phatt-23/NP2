@@ -18,24 +18,12 @@
             return;
         }
 
-        const sat = parseSatInstance(satInstance);
-        satInput = formatSatToInputString(sat);
+        satExpression = parseSatInstance(satInstance);
+        satInput = formatSatToInputString(satExpression);
 
         hamCycleInput = reduce("3SAT-HamCycle", satInput);
-    }
-    
-    $effect(() => {
-        if (!verifySatInstanceFormat(satInstance))
-            return;
-
-        satExpression = parseSatInstance(satInstance);
-    });
-
-    $effect(() => {
-        if (!hamCycleInput)
-            return;
         hamCycleInputGraph = parseGraphInput(hamCycleInput);
-    });
+    }
 </script>
 
 <main>
@@ -72,7 +60,7 @@
     <button onclick={onConvertClick}>Convert</button>
     <div>
         <BooleanFormula sat={satExpression}></BooleanFormula>
-        <GraphElement graph={hamCycleInputGraph}></GraphElement>
+        <GraphElement layout={"HamCycle-From-3SAT"} graph={hamCycleInputGraph}></GraphElement>
     </div>
 </main>
 
