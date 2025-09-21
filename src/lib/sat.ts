@@ -1,13 +1,30 @@
 const NEGATION = /(?:not\s+|!\s*)/i;
-const LITERAL = new RegExp('(' + NEGATION.source + '?(?:\\w+))', "i");
+
+const KEYWORDS = ["AND", "and", "&&", "OR", "or", "\\|\\|", "NOT", "!"];
+
+// Join the keywords into pipe delimited and add \b behind each one
+// AND\b|and\b|OR\b|or\b|NOT\b|not\b
+// /\b(?!(AND\b|and\b|OR\b|or\b|NOT\b|not\b))[A-Za-z][A-Za-z0-9_]*\b/i; 
+
+// literals (identifiers) excluding keywords
+const IDENTIFIER = new RegExp(
+    `\\b(?!${  KEYWORDS.map(kw => kw + "\\b").join("|")  })[A-Za-z][A-Za-z0-9_]*\\b`,
+  "i"
+);
+const LITERAL = new RegExp(
+    `\\s*${NEGATION.source}?${IDENTIFIER.source}\\s*`, "i");
+
 const OR = /(?:\s+(?:or|OR)\s+|\s*\|\|\s*)/i;
-const AND = /(?:\s*(?:and|AND|&&)\s*)/i;
-const CLAUSE = new RegExp('\\(\\s*' + '(?:' + LITERAL.source + OR.source + ')?' + '(?:' + LITERAL.source + OR.source + ')?' + LITERAL.source + '\\s*\\)', "i");
-const REG_3SAT = new RegExp('^\\s*' + '(?:' + CLAUSE.source + AND.source + ')*' + CLAUSE.source + '\\s*$', "i");
+const AND = /(?:\s+(?:and|AND)\s+|\s*&&s*)/i;
+
+const CLAUSE = new RegExp(
+    `\\(\\s*(${LITERAL.source}${OR.source})?(${LITERAL.source}${OR.source})?${LITERAL.source}\\s*\\)`, "i");
+const FORMULA = new RegExp(
+    `^\\s*(${CLAUSE.source}${AND.source})*${CLAUSE.source}\\s*$`, "i");
 
 // Verifies the format of the sat formula.
 export function verifySatInstanceFormat(instance: string): boolean {
-    return REG_3SAT.test(instance);
+    return FORMULA.test(instance);
 }
 
 export type SatExpression = {
@@ -28,6 +45,8 @@ export function parseSatInstance(
         removeDuplicateLiterals: true,
     },
 ): SatExpression {
+    // console.log(instance.split(AND));
+
     const clausesStr: string[] = instance.split(AND).map(s => s.replace("(", "").replace(")", ""))
 
     let variables = new Set<string>();
@@ -35,9 +54,12 @@ export function parseSatInstance(
 
     // put the clause into data
     for (let clause of clausesStr) {
+        
+        // console.log('before:', clause.split(OR));
         let literals = clause
             .split(OR)
-            .map(lit => lit.replace(NEGATION, "!"));
+            .map(lit => lit.replace(NEGATION, "!").trim());
+
 
         if (options.removeDuplicateLiterals) {
             let uniqueLiterals = new Set<string>();

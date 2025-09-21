@@ -6,7 +6,8 @@
     import SatToSsp from "./routes/SAT-SSP.svelte";
     import HamCycleToHamCircuit from "./routes/HamCycle-HamCircuit.svelte";
     import HamCircuitToTsp from "./routes/HamCircuit-TSP.svelte";
-    import SatTo3dm from "./routes/SAT-3DM.svelte"
+    import SatTo3dm from "./routes/SAT-3DM.svelte";
+    import ThreeDmToSsp from "./routes/3DM-SSP.svelte";
 
     const routes = {
         "/": Home,
@@ -15,6 +16,7 @@
         "/hamcircuit-to-tsp": HamCircuitToTsp,
         "/3sat-to-ssp": SatToSsp,
         "/3sat-to-3dm": SatTo3dm,
+        "/3dm-to-ssp": ThreeDmToSsp,
     };
 </script>
 
@@ -25,13 +27,15 @@
     <a use:link href="/hamcircuit-to-tsp">HamCircuit to TSP</a>
     <a use:link href="/3sat-to-ssp">3SAT to SSP</a>
     <a use:link href="/3sat-to-3dm">3SAT to 3DM</a>
+    <a use:link href="/3dm-to-ssp">3DM to SSP</a>
 </nav>
 
 <!-- the current route element gets put here -->
-<Router {routes} useHass />
+<Router {routes} />
 
 <style>
     a {
-        background: gray;
+        padding: 10px;
+        border: solid black;
     }
 </style>

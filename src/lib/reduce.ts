@@ -33,7 +33,7 @@ function reduceSatToHamCycle(input: string): string {
     let graph: Graph = { vertices: [], edges: [] };
     
     function createInbetweenVertexName(v1: string, v2: string): string { 
-        return '[BETWEEN[' + v1 + ',' + v2 + ']]';
+        return '[BETWEEN][' + v1 + ',' + v2 + ']';
     }
 
     function addRowEndsToVertexEdges(layer: number, inbetweenVertexAbove: string) {
@@ -46,13 +46,12 @@ function reduceSatToHamCycle(input: string): string {
         graph.edges.push([inbetweenVertexAbove, sat.variables[layer] + lastRowIdx]);
     }
 
-
     const k = sat.clauses.length;
     const n = sat.variables.length;
     const rowVertexCount = 3*k + 3;
     const lastRowIdx = "[" + (rowVertexCount - 1) + "]";
-    const sourceVertexName = sat.variables[0] + '[SOURCE]';
-    const targetVertexName = sat.variables[n - 1] + '[TARGET]';
+    const sourceVertexName = "[SOURCE]"
+    const targetVertexName = "[TARGET]"
 
     // for every variable create a gadget with 3k + 3 row nodes and connect them up
     for (let i = 0; i < n; i++) {
@@ -72,7 +71,7 @@ function reduceSatToHamCycle(input: string): string {
             // add edges from above gadget's row ends into the inbetween vertex 
             addRowEndsToVertexEdges(i - 1, inbetweenVertexAbove);
             // add edges from source to row ends of this first variable
-            addVertexToRowEndsEdges(sourceVertexName, i);
+            addVertexToRowEndsEdges(inbetweenVertexAbove, i);
         }
 
         // create row vertices and connect them to each other both ways
@@ -99,12 +98,12 @@ function reduceSatToHamCycle(input: string): string {
     }
 
     // connect target node to node node
-    graph.edges.push([sat.variables[n - 1] + "[TARGET]", sat.variables[0] + "[SOURCE]"]);
+    graph.edges.push([targetVertexName, sourceVertexName]);
 
     // add clause nodes and connect the row nodes of variables to clauses
     for (let i = 0; i < k; i++) {
         const c = sat.clauses[i];
-        const clauseName = '[CLAUSE[' + i + ']]';
+        const clauseName = '[CLAUSE][' + i + ']';
         
         // add clause to the graph
         graph.vertices.push(clauseName);
@@ -116,12 +115,12 @@ function reduceSatToHamCycle(input: string): string {
 
             if (v.search("!") == -1) {
                 // x
-                graph.edges.push([v1, clauseName]);
-                graph.edges.push([clauseName, v2]);
+                graph.edges.push([v1, clauseName, "[T]"]);
+                graph.edges.push([clauseName, v2, "[T]"]);
             } else {
                 // not x
-                graph.edges.push([v2, clauseName]);
-                graph.edges.push([clauseName, v1]);
+                graph.edges.push([v2, clauseName, "[F]"]);
+                graph.edges.push([clauseName, v1, "[F]"]);
             }
         }
     }

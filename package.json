@@ -20,6 +20,9 @@
   },
   "dependencies": {
     "cytoscape": "^3.33.1",
+    "graphology": "^0.26.0",
+    "katex": "^0.16.22",
+    "sigma": "^3.0.2",
     "svelte-spa-router": "^4.0.1"
   }
 }

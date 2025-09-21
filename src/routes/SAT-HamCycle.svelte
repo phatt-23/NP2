@@ -1,11 +1,16 @@
-<script>
+<script lang="ts">
     import { satDemos, getRandomDemo } from "../lib/demos";
     import { reduce } from "../lib/reduce";
-    import { verifySatInstanceFormat, parseSatInstance, formatSatToInputString } from "../lib/sat";
+    import { verifySatInstanceFormat, parseSatInstance, formatSatToInputString, type SatExpression } from "../lib/sat";
+    import { parseGraphInput, type Graph } from "../lib/graph";
+    import BooleanFormula from "../lib/BooleanFormula.svelte";
+    import GraphElement from "../lib/GraphElement.svelte";
 
     let satInstance = $state(getRandomDemo(satDemos));
+    let satExpression = $state<SatExpression>({ variables: [], clauses: [] });
     let satInput = $state("");
     let hamCycleInput = $state("");
+    let hamCycleInputGraph = $state<Graph>({ vertices: [], edges: [] });
 
     function onConvertClick() {
         if (!verifySatInstanceFormat(satInstance)) {
@@ -18,9 +23,22 @@
 
         hamCycleInput = reduce("3SAT-HamCycle", satInput);
     }
+    
+    $effect(() => {
+        if (!verifySatInstanceFormat(satInstance))
+            return;
+
+        satExpression = parseSatInstance(satInstance);
+    });
+
+    $effect(() => {
+        if (!hamCycleInput)
+            return;
+        hamCycleInputGraph = parseGraphInput(hamCycleInput);
+    });
 </script>
 
-<div>
+<main>
     <h1>3SAT to HamCycle</h1>
     <hr />
     <div style="display: flex;">
@@ -52,11 +70,18 @@
         </div>
     </div>
     <button onclick={onConvertClick}>Convert</button>
-</div>
+    <div>
+        <BooleanFormula sat={satExpression}></BooleanFormula>
+        <GraphElement graph={hamCycleInputGraph}></GraphElement>
+    </div>
+</main>
+
+
 
 <style>
     textarea {
         width: 30em;
         height: 20em;
     }
+
 </style>
