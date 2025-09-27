@@ -30,7 +30,7 @@
 
 <ReductionPanel
     inProblem={"3SAT"}
-    outProblem={"SSP"}
+    outProblem={"3DM"}
     bind:inInstance={satInstance}
     inInput={satInput}
     outInput={threeDmInput}

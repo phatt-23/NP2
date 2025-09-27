@@ -270,7 +270,7 @@ function reduceSatTo3dm(input: string): string {
     const n = sat.variables.length;
     let vertices = new Array<string>();
     let triplets = new Array<string[]>();
-    const tips = new Map<string, boolean>();
+    const tips = new Set<string>();
 
     // Boolean assignment gadgets.
     // Add core and tip nodes and make triplets of them.
@@ -292,16 +292,15 @@ function reduceSatTo3dm(input: string): string {
             ]);
 
             // set to false as this tip wasn't used yet.
-            tips.set(tip, false);
+            tips.add(tip);
         }
 
-        ASSERT(2*2*k*(i+1) === vertices.length && 2*k*(i+1) === triplets.length, 
-            "There should be 4k new vertices for every variable (2k core + 2k tips) and 2k new triplets.");
+        ASSERT(2*2*k*(i+1) === vertices.length, "There should be 4k new vertices for every variable (2k core + 2k tips)");
+        ASSERT(2*k*(i+1) === triplets.length, "There are 2k triplets.");
     }
 
-    ASSERT(2*2*k*n === vertices.length && 2*k*n === triplets.length, 
-        "There should be 4kn new vertices for every n variables (2k core + 2k tips)" + 
-        " and 2k new triplets for each n variables.");
+    ASSERT(2*2*k*n === vertices.length, "4kn new vertices for every n variables (2k core + 2k tips)");
+    ASSERT(2*k*n === triplets.length, "2k new triplets for each n variables");
 
     // Satisfiability gadgets.
     // add clause for every clause and connect it with its tips.
@@ -324,33 +323,44 @@ function reduceSatTo3dm(input: string): string {
             ASSERT(tips.has(tip), "This tip " + tip + " doesn't exist.");
 
             triplets.push([ c, cDash, tip ]);
-            tips.set(tip, true);
         }
     }
 
-    // Garbage collection
-    // The tips that weren't used are paired with two new nodes so they are in a triplet.
-    const unusedTips = [...tips.entries()]
-        .filter(([_tip, used]) => !used)
-        .map(([tip, _used]) => tip);
+    ASSERT(tips.size == 2*k*n)
 
-    for (const tip of unusedTips) {
-        const q = tip + "[Q]";
-        const qDash = tip + "[Q']";
+    // Garbage collection
+    // Let t be number of tips and k number of clauses.
+    // Given that boolean assignment is done, that leaves us with t/2 tips.
+    // Those of which are later paired up with k clauses.
+    // That means there are t/2 - k tips that are uncovered.
+    // We add t/2 - k garbage collectors that each connects to every tip.
+    // Then no tips are left behind. 
+    const garbageCollectionCount = (tips.size / 2) - sat.clauses.length;
+    for (let i = 0; i < garbageCollectionCount; i++) {
+        const q = "[Q][" + i + "]";
+        const qDash = "[Q'][" + i + "]";
         vertices.push(q);
         vertices.push(qDash);
-        triplets.push([tip, q, qDash]);
+        for (const tip of tips) {
+            triplets.push([tip, q, qDash]);
+        }
     }
 
-    ASSERT(vertices.length >= (2*2*k*n + 2*k + 2*unusedTips.length), 
-        "There should be at least 4kn vertices for boolean assignment " + 
-        "+ 2k clause vertices " + 
-        "+ 2*|unusedTips| of garbage collect vertices.");
+    ASSERT(vertices.length == (4*k*n + 2*k + 2*((2*k*n)/2 - k)), 
+        `
+        Let n be number of variables and k number of clauses.
+        There should be 4kn core and tip vertices.
+        There should be 2k clause vertices.
+        There should be 2*(2kn/2 - k) garbage collecting vertices.
+        `);    
 
-    ASSERT(triplets.length === (2*k*n + 2*k*n), 
-        "There should be 2kn triplets for core and tip boolean assignment" + 
-            // 2 for true and false k tips for every clause, for each n variables
-        " and 2kn triplets with tip and either clause nodes or garbage collector nodes.");
+    ASSERT(triplets.length >= (2*k*n + 2*k*n * ((2*k*n)/2 - k) + sat.clauses.map(c => c.length).reduce((a,b) => a+b)), 
+        `
+        Let n be number of variables and k number of clauses.
+        There should be 2kn triplets for core and tip boolean assignment. 
+        Each tip (2kn) node is connected to 2kn/2 - k garbage collectors.
+        There should be sum(len(c) for c in clauses) of tip to clause triplets.
+        `);
 
     const output = 
         vertices.length + " " + triplets.length +

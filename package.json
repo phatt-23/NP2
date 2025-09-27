@@ -12,6 +12,8 @@
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^6.2.0",
     "@tsconfig/svelte": "^5.0.5",
+    "@types/cytoscape-canvas": "^3.0.3",
+    "@types/hull.js": "^1.0.4",
     "gh-pages": "^6.3.0",
     "svelte": "^5.38.10",
     "svelte-check": "^4.3.1",
@@ -21,7 +23,9 @@
   "dependencies": {
     "cytoscape": "^3.33.1",
     "cytoscape-automove": "^1.10.3",
+    "cytoscape-canvas": "^3.0.1",
     "graphology": "^0.26.0",
+    "hull.js": "^1.0.6",
     "katex": "^0.16.22",
     "sigma": "^3.0.2",
     "svelte-spa-router": "^4.0.1"

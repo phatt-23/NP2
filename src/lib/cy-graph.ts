@@ -3,6 +3,8 @@ import { DIRECTED_GRAPH_DEFAULT_STYLE, GRAPH_HAMCYCLE_FROM_3SAT_STYLESHEET, GRAP
 import type { ElementDefinition } from "cytoscape";
 import { ASSERT } from "./lib";
 import type cytoscape from "cytoscape";
+import hull from "hull.js";
+
 
 export type GraphLayout = "default" 
                         | "HamCycle-From-3SAT" 
@@ -28,8 +30,8 @@ export function styleCy(cy: cytoscape.Core, layout: GraphLayout) {
         cy.style().append(GRAPH_DEFAULT_STYLE);
         break;
     case "3DM-From-3SAT":
-        cy.style()
-            .append(GRAPH_DEFAULT_STYLE)
+        cy.style().append(GRAPH_DEFAULT_STYLE)
+        // cy.layout({ name: "circle" }).run();
         break;
     case "HamCycle":
         cy.style().append(DIRECTED_GRAPH_DEFAULT_STYLE);
@@ -60,31 +62,88 @@ export function layoutGraphToCyElements(graph: Graph, layout: GraphLayout): Elem
 
             let data: ElementDefinition[] = [];
 
-            // add every vertex
-            data.push(...vertices.map((name, index) => ({
-                data: { 
-                    id: name, 
-                },
-                position: {
-                    x: 10,
-                    y: 10,
+            const variableVertices = vertices.filter(v => !v.startsWith("[")); 
+            const clauseVertices = vertices.filter(v => v.startsWith("[C]") || v.startsWith("[C']"))
+
+            //                     4kn => n = 4kn / k / 4 = 4kn / 4k
+            const clauseCount = clauseVertices.length / 2;
+            const variableCount = variableVertices.length / (4 * clauseCount);
+
+            const nodesPerVariable = 4*clauseCount;
+
+            const distBetweenVertices = 80;
+
+            const coreNodeCountPerVarGadget = 2 * clauseCount;
+            const circumference = distBetweenVertices * coreNodeCountPerVarGadget;
+            const radius = circumference / (2 * Math.PI);
+            const angleStep = 360 / coreNodeCountPerVarGadget;
+            const variableGadgetYPadding = 5 * radius;
+
+            // create variable gadgets
+            for (let i = 0; i < variableCount; i++) {
+                const node = variableVertices[i * nodesPerVariable];
+                const varName = node.substring(0, node.indexOf("["));
+                const varNodes = variableVertices.filter(v => v.startsWith(varName))
+                const varCoreNodes = varNodes.filter(v => v.includes("[C]"));
+                const varTipNodes = varNodes.filter(v => v.includes("[T]"));
+
+                ASSERT(varCoreNodes.length == varTipNodes.length);
+                
+                const toRad = (x: number) => x * Math.PI / 180;
+
+                for (let j = 0; j < varCoreNodes.length; j++) {
+                    let x = Math.cos(toRad(j * angleStep));
+                    let y = Math.sin(toRad(j * angleStep));
+
+                    data.push({
+                        data: { id: varCoreNodes[j] },
+                        position: {
+                            x: radius * x,
+                            y: radius * y + i*variableGadgetYPadding
+                        }
+                    });
+
+                    x = Math.cos(toRad(j * angleStep + angleStep/2));
+                    y = Math.sin(toRad(j * angleStep + angleStep/2));
+
+                    data.push({
+                        data: { id: varTipNodes[j] },
+                        position: {
+                            x: (radius + distBetweenVertices) * x,
+                            y: (radius + distBetweenVertices) * y + i*variableGadgetYPadding,
+                        }
+                    });
                 }
-            }))
-            );
 
-            // // for each edge create one 
-            // edges.forEach(([u, v, w]) => {
-            //     data.push({
-            //         data: { 
-            //             id: u + v + w, 
-            //             source: u,
-            //             target: v,
-            //         }
-            //     });
+            }
 
-            //     data.push
-            // });
-            
+            ASSERT(variableGadgetYPadding !== undefined)
+
+            const variableGadgetsHeight = variableGadgetYPadding * (variableCount - 1);
+            const yOffset = variableGadgetsHeight / (clauseCount - 1);
+
+            // create satifiability gadgets
+            for (let i = 0; i < clauseCount; i++) {
+                const c = clauseVertices[2*i];
+                const cDash = clauseVertices[2*i + 1];
+
+                data.push({
+                    data: { id: c },
+                    position: {
+                        x: variableGadgetYPadding,
+                        y: i * yOffset,
+                    },
+                });
+
+                data.push({
+                    data: { id: cDash },
+                    position: {
+                        x: variableGadgetYPadding + distBetweenVertices,
+                        y: i * yOffset,
+                    },
+                });
+
+            }
 
             return data;
         }
@@ -154,12 +213,13 @@ export function layoutGraphToCyElements(graph: Graph, layout: GraphLayout): Elem
             const spreadOut = clauseCount / variableCount;
             const assignmentAccordeonHeight = variableGadgetYPadding * (variableCount - 1 + spreadOut);
             const clauseVertexYStep = assignmentAccordeonHeight / (clauseCount - 1);
+            const yOffset = variableGadgetYPadding * (spreadOut / 2);
 
             data.push(...clauseVertices.map((name, i) => ({
                 data: { id: name },
                 position: {
                     x: rowVertexGap * (rowVertexCount - 1) + clauseVertexXOffset,
-                    y: clauseVertexYStep * i - (variableGadgetYPadding * (spreadOut / 2)),
+                    y: clauseVertexYStep * i - yOffset,
                 },
                 classes: "clause",
             })));
@@ -242,4 +302,135 @@ export function layoutGraphToCyElements(graph: Graph, layout: GraphLayout): Elem
                 ...graph.edges.map(([u, v]) => ({ data: { id: u + "--" + v, source: u, target: v } }))
             ];
     }
+}
+
+export function drawConvexHullsFor3DM(cy: cytoscape.Core, graph: Graph) {
+    // draw convex hulls
+    const layer = cy.cyCanvas({ zIndex: -1 });
+    const ctx = layer.getCanvas().getContext("2d")!;
+
+    function createCirclePoints(pos: number[], radius: number, resolution: number): number[][] {
+        const circum = 2 * Math.PI * radius;
+        const dist = circum / resolution;
+        const angleStep = 360 / resolution;
+        let points = [];
+
+        const toRad = (x: number) => x * Math.PI/180;
+
+        for (let i = 0; i < resolution; i++) {
+            const x = Math.cos(toRad(angleStep * i));
+            const y = Math.sin(toRad(angleStep * i));
+
+            points.push([pos[0] + x * radius, pos[1] + y * radius]);
+        }
+
+        return points;
+    }
+
+    function drawHulls() {
+        const nodesByVar: Record<string, cytoscape.NodeSingular[]> = {};
+        cy.nodes().forEach(n => {
+            const id = n.id();
+            const varName = id.substring(0, id.indexOf("[")); 
+            if (!nodesByVar[varName]) nodesByVar[varName] = [];
+            nodesByVar[varName].push(n);
+        });
+
+        // clear and sync transform
+        // --- key part ---
+        layer.resetTransform(ctx);  // reset any old transforms
+        layer.clear(ctx);           // clear background
+        layer.setTransform(ctx);    // <--- apply Cytoscape’s pan/zoom transform
+        // -----------------
+
+        Object.entries(nodesByVar).forEach(([varName, nodes]) => {
+            if (nodes.length < 3) return;
+
+            const tipNodes = nodes.filter(n => n.id().includes("[T]"));
+            const coreNodes = nodes.filter(n => n.id().includes("[C]"));
+
+            tipNodes.forEach((tipNode, index) => {
+                const c = coreNodes[index];
+                const cDash = coreNodes[(index+1) % coreNodes.length];
+
+                const points: number[][] = [
+                    [tipNode.position("x"), tipNode.position("y")],
+                    [c.position("x"), c.position("y")],
+                    [cDash.position("x"), cDash.position("y")],
+                ];
+                const surroundPoints = points.flatMap(([x, y]) => createCirclePoints([x,y], 24, 32))
+                const hullPoints = hull(surroundPoints, Infinity) as number[][]; // concavity
+
+                ctx.beginPath();
+                ctx.moveTo(hullPoints[0][0], hullPoints[0][1]);
+                for (let i = 1; i < hullPoints.length; i++) {
+                    ctx.lineTo(hullPoints[i][0], hullPoints[i][1]);
+                }
+                ctx.closePath();
+
+                if (index % 2 == 0) {
+                    ctx.fillStyle = "rgba(0, 255, 0, 0.1)";
+                    ctx.strokeStyle = "rgba(0, 255, 0, 0.8)";
+                } else {
+                    ctx.fillStyle = "rgba(255, 0, 0, 0.1)";
+                    ctx.strokeStyle = "rgba(255, 0, 0, 0.8)";
+                }
+                ctx.lineWidth = 2;
+                ctx.fill();
+                ctx.stroke();tipNodes
+
+                // optional label
+                const center = points.reduce(
+                    (acc, p) => [acc[0] + p[0] / points.length, acc[1] + p[1] / points.length],
+                    [0, 0]
+                );
+                ctx.fillStyle = "black";
+                ctx.font = "14px sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillText(varName, center[0], center[1]);
+            });
+
+            const clauseTriplets = graph.edges.filter(([clause, clauseDash, tip]) => clause.startsWith("[C]") && clauseDash.startsWith("[C']"));
+            clauseTriplets.forEach(([x,y,z]) => {
+                const nodeX = cy.getElementById(x);
+                const nodeY = cy.getElementById(y);
+                const nodeZ = cy.getElementById(z);
+
+
+                const points: number[][] = [
+                    [nodeX.position("x"), nodeX.position("y")],
+                    [nodeY.position("x"), nodeY.position("y")],
+                    [nodeZ.position("x"), nodeZ.position("y")],
+                ];
+                const surroundPoints = points.flatMap(([x, y]) => createCirclePoints([x,y], 24, 32))
+                const hullPoints = hull(surroundPoints, Infinity) as number[][]; // concavity
+
+                ctx.beginPath();
+                ctx.moveTo(hullPoints[0][0], hullPoints[0][1]);
+                for (let i = 1; i < hullPoints.length; i++) {
+                    ctx.lineTo(hullPoints[i][0], hullPoints[i][1]);
+                }
+                ctx.closePath();
+
+                ctx.fillStyle = "rgba(255, 150, 255, 0.05)";
+                ctx.strokeStyle = "rgba(255, 150, 255, 1.0)";
+                ctx.lineWidth = 2;
+                ctx.fill();
+                ctx.stroke();tipNodes
+
+                // optional label
+                const center = points.reduce(
+                    (acc, p) => [acc[0] + p[0] / points.length, acc[1] + p[1] / points.length],
+                    [0, 0]
+                );
+                ctx.fillStyle = "black";
+                ctx.font = "14px sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillText(varName, center[0], center[1]);
+            });
+            
+        });
+    }
+
+    cy.on("render", drawHulls);
 }
