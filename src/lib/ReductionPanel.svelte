@@ -2,10 +2,11 @@
     let { 
         inProblem,
         outProblem,
-        inInstance, 
+        inInstance = $bindable(), 
         inInput, 
         outInput, 
-        onConvertClick
+        onConvertClick,
+        demoInstances,
     } = $props();
 </script>
 
@@ -39,6 +40,12 @@
 </div>
 
 <button onclick={onConvertClick}>Convert</button>
+
+<select bind:value={inInstance}>
+    {#each demoInstances as value, index}
+        <option {value}>{index}</option>
+    {/each}
+</select>
 
 <style>
     textarea {
