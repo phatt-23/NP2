@@ -31,10 +31,11 @@
 <ReductionPanel
     inProblem={"HamCircuit"}
     outProblem={"TSP"}
-    inInstance={hamCircuitInstance}
+    bind:inInstance={hamCircuitInstance}
     inInput={hamCircuitInput}
     outInput={tspInput}
     onConvertClick={onConvertClick}
+    demoInstances={graphDemos}
 />
 
 <h2>HamCircuit Graph</h2>

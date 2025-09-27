@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { satDemos, getRandomDemo } from "../lib/demos";
+    import { satDemos, getRandomDemo, graphDemos } from "../lib/demos";
     import { reduce } from "../lib/reduce";
     import { verifySatInstanceFormat, parseSatInstance, formatSatToInputString, type SatExpression } from "../lib/sat";
     import { parseGraphInput, type Graph } from "../lib/graph";
@@ -29,20 +29,21 @@
 
 <h1>3SAT to HamCycle</h1>
 <hr />
+
 <ReductionPanel 
     inProblem={"3SAT"}
     outProblem={"HamCycle"}
-    inInstance={satInstance}
+    bind:inInstance={satInstance}
     inInput={satInput}
     outInput={hamCycleInput}
     onConvertClick={onConvertClick}
+    demoInstances={satDemos}
 />
-<div>
-    <h2>Boolean Formula</h2>
-    <SatFormula {sat} />
 
-    <h2>HamCycle Graph</h2>
-    <GraphElement layout={"HamCycle-From-3SAT"} graph={hamCycleInputGraph}></GraphElement>
-</div>
+<h2>Boolean Formula</h2>
+<SatFormula {sat} />
+
+<h2>HamCycle Graph</h2>
+<GraphElement layout={"HamCycle-From-3SAT"} graph={hamCycleInputGraph}></GraphElement>
 
 

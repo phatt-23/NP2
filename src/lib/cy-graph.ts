@@ -10,6 +10,7 @@ export type GraphLayout = "default"
                         | "HamCycle" 
                         | "HamCircuit"
                         | "TSP"
+                        | "3DM-From-3SAT"
                         ;
 
 
@@ -26,6 +27,10 @@ export function styleCy(cy: cytoscape.Core, layout: GraphLayout) {
     case "HamCircuit-From-HamCycle":
         cy.style().append(GRAPH_DEFAULT_STYLE);
         break;
+    case "3DM-From-3SAT":
+        cy.style()
+            .append(GRAPH_DEFAULT_STYLE)
+        break;
     case "HamCycle":
         cy.style().append(DIRECTED_GRAPH_DEFAULT_STYLE);
         cy.layout({ name: "circle" }).run();
@@ -39,6 +44,7 @@ export function styleCy(cy: cytoscape.Core, layout: GraphLayout) {
             .append(GRAPH_DEFAULT_STYLE)
             .append(GRAPH_TSP_FROM_HAMCIRCUIT_STYLE);
         cy.layout({ name: "circle" }).run();
+        break;
     default:
         cy.style().append(GRAPH_DEFAULT_STYLE);
         cy.layout({ name: "circle" }).run();
@@ -49,6 +55,39 @@ export function styleCy(cy: cytoscape.Core, layout: GraphLayout) {
 export function layoutGraphToCyElements(graph: Graph, layout: GraphLayout): ElementDefinition[] {
     // if no layout is provided fallback to circle layout
     switch (layout) {
+        case "3DM-From-3SAT": {
+            const { vertices, edges } = graph;
+
+            let data: ElementDefinition[] = [];
+
+            // add every vertex
+            data.push(...vertices.map((name, index) => ({
+                data: { 
+                    id: name, 
+                },
+                position: {
+                    x: 10,
+                    y: 10,
+                }
+            }))
+            );
+
+            // // for each edge create one 
+            // edges.forEach(([u, v, w]) => {
+            //     data.push({
+            //         data: { 
+            //             id: u + v + w, 
+            //             source: u,
+            //             target: v,
+            //         }
+            //     });
+
+            //     data.push
+            // });
+            
+
+            return data;
+        }
         case "HamCycle-From-3SAT": {
             // destructure graph data
             const clauseVertices = graph.vertices.filter(name => name.includes("[CLAUSE]"));
@@ -196,7 +235,7 @@ export function layoutGraphToCyElements(graph: Graph, layout: GraphLayout): Elem
                     target: v, 
                     weight: Number.parseInt(w) 
                 }}))
-            ];    
+            ];
         default:
             return [
                 ...graph.vertices.map(name => ({ data: { id: name } })),
