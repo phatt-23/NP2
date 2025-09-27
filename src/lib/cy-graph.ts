@@ -63,6 +63,7 @@ export function layoutGraphToCyElements(graph: Graph, layout: GraphLayout): Elem
 
             const variableVertices = vertices.filter(v => !v.startsWith("[")); 
             const clauseVertices = vertices.filter(v => v.startsWith("[C]") || v.startsWith("[C']"))
+            const garbageVertices = vertices.filter(v => v.startsWith("[Q]") || v.startsWith("[Q']"))
 
             //                     4kn => n = 4kn / k / 4 = 4kn / 4k
             const clauseCount = clauseVertices.length / 2;
@@ -119,7 +120,7 @@ export function layoutGraphToCyElements(graph: Graph, layout: GraphLayout): Elem
             ASSERT(variableGadgetYPadding !== undefined)
 
             const variableGadgetsHeight = variableGadgetYPadding * (variableCount - 1);
-            const yOffset = variableGadgetsHeight / (clauseCount - 1);
+            const clauseYOffset = variableGadgetsHeight / (clauseCount - 1);
 
             // create satifiability gadgets
             for (let i = 0; i < clauseCount; i++) {
@@ -130,18 +131,45 @@ export function layoutGraphToCyElements(graph: Graph, layout: GraphLayout): Elem
                     data: { id: c },
                     position: {
                         x: variableGadgetYPadding,
-                        y: i * yOffset,
+                        y: i * clauseYOffset - distBetweenVertices/2,
                     },
                 });
 
                 data.push({
                     data: { id: cDash },
                     position: {
-                        x: variableGadgetYPadding + distBetweenVertices,
-                        y: i * yOffset,
+                        x: variableGadgetYPadding,
+                        y: i * clauseYOffset + distBetweenVertices/2,
                     },
                 });
 
+            }
+
+            const garbageCollectionCount = variableVertices.length / 4 - clauseCount;
+            ASSERT(garbageVertices.length/2 == garbageCollectionCount);
+
+            const garbageYOffset = variableGadgetsHeight / (garbageCollectionCount - 1);
+
+            // create garbage collectors
+            for (let i = 0; i < garbageCollectionCount; i++) {
+                const q = garbageVertices[2*i];
+                const qDash = garbageVertices[2*i + 1];
+
+                data.push({
+                    data: { id: q },
+                    position: {
+                        x: -variableGadgetYPadding - distBetweenVertices,
+                        y: i * garbageYOffset,
+                    },
+                });
+
+                data.push({
+                    data: { id: qDash },
+                    position: {
+                        x: -variableGadgetYPadding,
+                        y: i * garbageYOffset,
+                    },
+                });
             }
 
             return data;
@@ -420,6 +448,41 @@ export function drawConvexHullsFor3DM(cy: cytoscape.Core, graph: Graph) {
                 );
             });
             
+
+            const garbageTriplets = graph.edges.filter(([q, qDash, tip]) => q.startsWith("[Q]") && qDash.startsWith("[Q']"));
+            garbageTriplets.forEach(([x, y, z]) => {
+                const nodeX = cy.getElementById(x);
+                const nodeY = cy.getElementById(y);
+                const nodeZ = cy.getElementById(z);
+
+                const points: number[][] = [
+                    [nodeX.position("x"), nodeX.position("y")],
+                    [nodeY.position("x"), nodeY.position("y")],
+                    [nodeZ.position("x"), nodeZ.position("y")],
+                ];
+                const surroundPoints = points.flatMap(([x, y]) => createCirclePoints([x,y], 24, 32))
+                const hullPoints = hull(surroundPoints, Infinity) as number[][]; // concavity
+
+                ctx.beginPath();
+                ctx.moveTo(hullPoints[0][0], hullPoints[0][1]);
+                for (let i = 1; i < hullPoints.length; i++) {
+                    ctx.lineTo(hullPoints[i][0], hullPoints[i][1]);
+                }
+                ctx.closePath();
+
+                ctx.fillStyle = "rgba(0, 0, 0, 0.000)";
+                ctx.strokeStyle = "rgba(0, 0, 0, 0.01)";
+                ctx.lineWidth = 2;
+                ctx.fill();
+                ctx.stroke();
+
+                // optional label
+                const center = points.reduce(
+                    (acc, p) => [acc[0] + p[0] / points.length, acc[1] + p[1] / points.length],
+                    [0, 0]
+                );
+
+            })
         });
     }
 

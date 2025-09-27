@@ -28,6 +28,9 @@
     }
 </script>
 
+<h1>3SAT to 3DM</h1>
+<hr/>
+
 <ReductionPanel
     inProblem={"3SAT"}
     outProblem={"3DM"}

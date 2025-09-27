@@ -342,7 +342,7 @@ function reduceSatTo3dm(input: string): string {
         vertices.push(q);
         vertices.push(qDash);
         for (const tip of tips) {
-            triplets.push([tip, q, qDash]);
+            triplets.push([q, qDash, tip]);
         }
     }
 
