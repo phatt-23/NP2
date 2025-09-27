@@ -369,11 +369,11 @@ export function drawConvexHullsFor3DM(cy: cytoscape.Core, graph: Graph) {
                 ctx.closePath();
 
                 if (index % 2 == 0) {
-                    ctx.fillStyle = "rgba(0, 255, 0, 0.1)";
-                    ctx.strokeStyle = "rgba(0, 255, 0, 0.8)";
-                } else {
                     ctx.fillStyle = "rgba(255, 0, 0, 0.1)";
                     ctx.strokeStyle = "rgba(255, 0, 0, 0.8)";
+                } else {
+                    ctx.fillStyle = "rgba(0, 200, 0, 0.1)";
+                    ctx.strokeStyle = "rgba(0, 200, 0, 0.8)";
                 }
                 ctx.lineWidth = 2;
                 ctx.fill();
@@ -384,10 +384,6 @@ export function drawConvexHullsFor3DM(cy: cytoscape.Core, graph: Graph) {
                     (acc, p) => [acc[0] + p[0] / points.length, acc[1] + p[1] / points.length],
                     [0, 0]
                 );
-                ctx.fillStyle = "black";
-                ctx.font = "14px sans-serif";
-                ctx.textAlign = "center";
-                ctx.fillText(varName, center[0], center[1]);
             });
 
             const clauseTriplets = graph.edges.filter(([clause, clauseDash, tip]) => clause.startsWith("[C]") && clauseDash.startsWith("[C']"));
@@ -423,10 +419,6 @@ export function drawConvexHullsFor3DM(cy: cytoscape.Core, graph: Graph) {
                     (acc, p) => [acc[0] + p[0] / points.length, acc[1] + p[1] / points.length],
                     [0, 0]
                 );
-                ctx.fillStyle = "black";
-                ctx.font = "14px sans-serif";
-                ctx.textAlign = "center";
-                ctx.fillText(varName, center[0], center[1]);
             });
             
         });

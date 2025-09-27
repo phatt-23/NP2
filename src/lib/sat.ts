@@ -15,7 +15,7 @@ const LITERAL = new RegExp(
     `\\s*${NEGATION.source}?${IDENTIFIER.source}\\s*`, "i");
 
 const OR = /(?:\s+(?:or|OR)\s+|\s*\|\|\s*)/i;
-const AND = /(?:\s*(?:and|AND)\s*|\s*&&s*)/i;
+const AND = /(?:\s*(?:and|AND|&&)\s*)/i;
 
 const CLAUSE = new RegExp(
     `\\(\\s*(${LITERAL.source}${OR.source})?(${LITERAL.source}${OR.source})?${LITERAL.source}\\s*\\)`, "i");
