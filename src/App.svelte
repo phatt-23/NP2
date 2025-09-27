@@ -8,6 +8,14 @@
     import HamCircuitToTsp from "./routes/HamCircuit-TSP.svelte";
     import SatTo3dm from "./routes/SAT-3DM.svelte";
     import ThreeDmToSsp from "./routes/3DM-SSP.svelte";
+    import { onMount } from "svelte";
+    import cyCanvas from "cytoscape-canvas";
+    import cytoscape from "cytoscape";
+
+    onMount(() => {
+        cyCanvas(cytoscape);
+    });
+
 
     const routes = {
         "/": Home,

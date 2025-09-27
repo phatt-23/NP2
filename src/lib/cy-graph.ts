@@ -31,7 +31,6 @@ export function styleCy(cy: cytoscape.Core, layout: GraphLayout) {
         break;
     case "3DM-From-3SAT":
         cy.style().append(GRAPH_DEFAULT_STYLE)
-        // cy.layout({ name: "circle" }).run();
         break;
     case "HamCycle":
         cy.style().append(DIRECTED_GRAPH_DEFAULT_STYLE);
